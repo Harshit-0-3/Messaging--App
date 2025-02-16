@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import { Server } from "socket.io";
 import http from "http";
+import { globalLimiter } from "./middleware/rateLimiter.js";
 
 dotenv.config();
 const app = express();
@@ -13,6 +14,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(globalLimiter); // Apply Global Rate Limiter
 
 // Routes
 app.use("/api/auth", authRoutes);

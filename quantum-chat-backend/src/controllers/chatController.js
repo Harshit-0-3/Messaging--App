@@ -1,6 +1,12 @@
+import { validationResult } from "express-validator";
 import Message from "../models/Message.js";
 
 export const sendMessage = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     const { sender, receiver, message } = req.body;
     const newMessage = new Message({ sender, receiver, message });
@@ -11,6 +17,7 @@ export const sendMessage = async (req, res) => {
     res.status(500).json({ message: "Error sending message", error });
   }
 };
+
 
 export const getMessages = async (req, res) => {
   try {
