@@ -1,37 +1,42 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  // Type-safe form event
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/chat");
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
+      const { data } = await axios.post("http://localhost:5000/api/auth/login", {
         email,
         password,
       });
 
-      const { token } = response.data;
-
-      // Save JWT token to localStorage
-      localStorage.setItem("token", token);
+      localStorage.setItem("token", data.token);
       alert("Login Successful!");
-
-      // Redirect to the chat page
       navigate("/chat");
     } catch (err) {
-      // Ensure error type safety
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || "Login failed. Try again.");
       } else {
         setError("An unexpected error occurred.");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,11 +61,13 @@ const Login: React.FC = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit">Login</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
       </form>
 
       <p>
-        Don't have an account? <a href="/">Register</a>
+        Don't have an account? <Link to="/">Register</Link>
       </p>
     </div>
   );

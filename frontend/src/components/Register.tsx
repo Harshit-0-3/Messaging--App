@@ -1,14 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Register: React.FC = () => {
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const navigate = useNavigate(); // ✅ Initialize the navigate hook
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Form Submitted", { name, email, password });
+    console.log("Form Submitted", { username: name, email, password });
 
     if (!name || !email || !password) {
       alert("Please fill all fields");
@@ -17,12 +19,21 @@ const Register: React.FC = () => {
 
     try {
       const response = await axios.post("http://localhost:5000/api/auth/register", {
-        name,
+        username: name,
         email,
         password,
       });
+
       console.log("Registration Successful:", response.data);
       alert("Registration successful!");
+
+      // ✅ Save JWT token (if returned) to localStorage
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+
+      // ✅ Redirect to the chat page
+      navigate("/chat");
     } catch (error) {
       console.error("Registration Error:", error);
       alert("Error during registration");
@@ -32,7 +43,10 @@ const Register: React.FC = () => {
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
       <h1>Register Page</h1>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "400px", margin: "0 auto" }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "400px", margin: "0 auto" }}
+      >
         <input
           type="text"
           placeholder="Name"
