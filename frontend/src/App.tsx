@@ -1,11 +1,16 @@
-// src/App.jsx
-function App() {
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Register from "./components/Register";
+import Login from "./components/Login";
+
+const App: React.FC = () => {
   return (
-    <div>
-      <h1>Secure Linking</h1>
-      <p>Welcome to your secure messaging platform!</p>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;

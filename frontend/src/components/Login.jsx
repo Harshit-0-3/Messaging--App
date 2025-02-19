@@ -1,32 +1,47 @@
-// src/components/Login.jsx
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const Login: React.FC = () => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  // Type-safe form event
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post("http://localhost:5000/api/auth/login", {
+      const response = await axios.post("http://localhost:5000/api/auth/login", {
         email,
         password,
       });
-      localStorage.setItem("token", data.token);
+
+      const { token } = response.data;
+
+      // Save JWT token to localStorage
+      localStorage.setItem("token", token);
+      alert("Login Successful!");
+
+      // Redirect to the chat page
       navigate("/chat");
-    } catch (error) {
-      alert("Invalid credentials");
-      console.error("Login error:", error);
+    } catch (err) {
+      // Ensure error type safety
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || "Login failed. Try again.");
+      } else {
+        setError("An unexpected error occurred.");
+      }
     }
   };
 
   return (
     <div>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
+      <h1>Login Page</h1>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <form onSubmit={handleSubmit}>
         <input
           type="email"
           placeholder="Email"
@@ -43,8 +58,12 @@ function Login() {
         />
         <button type="submit">Login</button>
       </form>
+
+      <p>
+        Don't have an account? <a href="/">Register</a>
+      </p>
     </div>
   );
-}
+};
 
 export default Login;
